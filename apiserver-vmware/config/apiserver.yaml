@@ -1,22 +1,4 @@
 
-apiVersion: apiregistration.k8s.io/v1beta1
-kind: APIService
-metadata:
-  name: v1alpha1.vms.kubevirt.io
-  labels:
-    api: vmware-proxy
-    apiserver: "true"
-spec:
-  version: v1alpha1
-  group: vms.kubevirt.io
-  groupPriorityMinimum: 2000
-  priority: 200
-  service:
-    name: vmware-proxy
-    namespace: default
-  versionPriority: 10
-  caBundle: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURyakNDQXBhZ0F3SUJBZ0lKQVBLd09oMnBldDdaTUEwR0NTcUdTSWIzRFFFQkN3VUFNR3d4Q3pBSkJnTlYKQkFZVEFuVnVNUXN3Q1FZRFZRUUlEQUp6ZERFS01BZ0dBMVVFQnd3QmJERUtNQWdHQTFVRUNnd0JiekVMTUFrRwpBMVVFQ3d3Q2IzVXhLekFwQmdOVkJBTU1Jblp0ZDJGeVpTMXdjbTk0ZVMxalpYSjBhV1pwWTJGMFpTMWhkWFJvCmIzSnBkSGt3SGhjTk1Ua3dNakl5TVRBME9UTTRXaGNOTWpBd01qSXlNVEEwT1RNNFdqQnNNUXN3Q1FZRFZRUUcKRXdKMWJqRUxNQWtHQTFVRUNBd0NjM1F4Q2pBSUJnTlZCQWNNQVd3eENqQUlCZ05WQkFvTUFXOHhDekFKQmdOVgpCQXNNQW05MU1Tc3dLUVlEVlFRRERDSjJiWGRoY21VdGNISnZlSGt0WTJWeWRHbG1hV05oZEdVdFlYVjBhRzl5CmFYUjVNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQW1kcXI2MzIxK2s0bG1wU1kKVGZtelZLWXo2NnFOT2p3ckUrVEpZdmdGSjRSdzYzS3J4QnhHMzFBcFpsdkpZbncrUTBIU0YvUlZHMzd3TDFqYQpRd3BpaDRLcXdwTDlzZTQrU1hsdE9DOWJVL0NjZEE1Q0JLQ1J3NW5LK2hicm4wdFZTK29ia2FhQ2lwS0d3M3krCkszanQreWZYTGwyV244ZWhyMUJvY1RTWDMyaEpkNkVqVFpKMFF5S25IYlBQcGtYNFZEYXErbDVtNmlvOHRMeXUKYUZmeHl3TFYxbXAzYWdpMGxKM2tVYWV1dDFUbTB5QTZMV3NEYnlueTBBb1BaU3MrMU9YdWp0cGlINTJkdzVkTAozdkRwbmNxU0Fqc3EzU2EvZC9BSEkrUUV6dllIYkRYRkZ2d0NvYVpkUGRSRUVhcjN5QmM2RklUTi9EcVBwTEl4CnhpN2dxUUlEQVFBQm8xTXdVVEFkQmdOVkhRNEVGZ1FVWjdYZFc5VlJ1QVVyZisyeW15TXJmTUNvZXZjd0h3WUQKVlIwakJCZ3dGb0FVWjdYZFc5VlJ1QVVyZisyeW15TXJmTUNvZXZjd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBTgpCZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUFIald0RUtGeWhTL3BPM1JhSnMwRkFDUzJjMThrVFN5ajdKUzMrNTNNCnhwcHVuMnE2SVJJMERrTGhjUGJkVXRMTnN5STRZZWNDaE1FZjJEaUhCRUpDWUJUWHlBQ0RaYys0VHNDWVAvK0EKUzI0QU5rVmZLejFUZXVzVUwzU2ZESG1hVnRNRTRRWnU1dEhlN0Z0RmJSbEhaRWtRWmNQQWJuTCs2T1F5MFUvdgpnb3pOd2tBUlJtYXNCZy9JRGczeWpmejZsYXQvMGdEZWVTZllzQ0drTW83b2thVEsxWFB2L29CbUFjRWlibHRICmYvbWllQmFXdmxqb0gwbEJuV21xbjhBR25wczNSMnRzVU82bXFRdDc3amhHR3hOQVNRWThEY0JiOUVxbGNBSU4KWGJZNUdReUY5WnR2ek40cC82dG83bWFrWFdQOG5jNHhKdk9FdFpaZ0FlZ1JDZz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K"
----
 apiVersion: v1
 kind: Service
 metadata:
@@ -26,8 +8,176 @@ metadata:
     api: vmware-proxy
     apiserver: "true"
 spec:
-  type: ExternalName
-  externalName: "10.0.2.2"
   ports:
   - port: 443
     protocol: TCP
+    targetPort: 443
+  selector:
+    api: vmware-proxy
+    apiserver: "true"
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: vmware-proxy
+  namespace: default
+  labels:
+    api: vmware-proxy
+    apiserver: "true"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        api: vmware-proxy
+        apiserver: "true"
+    spec:
+      containers:
+      - name: apiserver
+        image: quay.io/pkliczewski/apiserver-vmware
+        volumeMounts:
+        - name: apiserver-certs
+          mountPath: /apiserver.local.config/certificates
+          readOnly: true
+        command:
+        - "./apiserver"
+        args:
+        - "--etcd-servers=http://etcd-svc:2379"
+        - "--tls-cert-file=/apiserver.local.config/certificates/tls.crt"
+        - "--tls-private-key-file=/apiserver.local.config/certificates/tls.key"
+        - "--audit-log-path=-"
+        - "--audit-log-maxage=0"
+        - "--audit-log-maxbackup=0"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 20Mi
+          limits:
+            cpu: 100m
+            memory: 30Mi
+      - name: controller
+        image: quay.io/pkliczewski/apiserver-vmware
+        command:
+        - "./controller-manager"
+        args:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 20Mi
+          limits:
+            cpu: 100m
+            memory: 30Mi
+      volumes:
+      - name: apiserver-certs
+        secret:
+          secretName: vmware-proxy
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: etcd
+  namespace: default
+spec:
+  serviceName: "etcd"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: etcd
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: etcd
+        image: quay.io/coreos/etcd:latest
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 100m
+            memory: 20Mi
+          limits:
+            cpu: 100m
+            memory: 30Mi
+        env:
+        - name: ETCD_DATA_DIR
+          value: /etcd-data-dir
+        command:
+        - /usr/local/bin/etcd
+        - --listen-client-urls
+        - http://0.0.0.0:2379
+        - --advertise-client-urls
+        - http://localhost:2379
+        ports:
+        - containerPort: 2379
+        volumeMounts:
+        - name: etcd-data-dir
+          mountPath: /etcd-data-dir
+        readinessProbe:
+          httpGet:
+            port: 2379
+            path: /health
+          failureThreshold: 1
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            port: 2379
+            path: /health
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+  volumeClaimTemplates:
+  - metadata:
+     name: etcd-data-dir
+     annotations:
+        volume.beta.kubernetes.io/storage-class: standard
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+         storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd-svc
+  namespace: default
+  labels:
+    app: etcd
+spec:
+  ports:
+  - port: 2379
+    name: etcd
+    targetPort: 2379
+  selector:
+    app: etcd
+---
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/tls
+metadata:
+  name: vmware-proxy
+  namespace: default
+  labels:
+    api: vmware-proxy
+    apiserver: "true"
+data:
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURTakNDQWpJQ0NRRGhJNTBaK2J3N2lEQU5CZ2txaGtpRzl3MEJBUXNGQURCc01Rc3dDUVlEVlFRR0V3SjEKYmpFTE1Ba0dBMVVFQ0F3Q2MzUXhDakFJQmdOVkJBY01BV3d4Q2pBSUJnTlZCQW9NQVc4eEN6QUpCZ05WQkFzTQpBbTkxTVNzd0tRWURWUVFERENKMmJYZGhjbVV0Y0hKdmVIa3RZMlZ5ZEdsbWFXTmhkR1V0WVhWMGFHOXlhWFI1Ck1CNFhEVEU1TURJeU1qRTBORGd5TWxvWERUSXdNREl5TWpFME5EZ3lNbG93WWpFTE1Ba0dBMVVFQmhNQ2RXNHgKQ3pBSkJnTlZCQWdNQW5OME1Rb3dDQVlEVlFRSERBRnNNUW93Q0FZRFZRUUtEQUZ2TVFzd0NRWURWUVFMREFKdgpkVEVoTUI4R0ExVUVBd3dZZG0xM1lYSmxMWEJ5YjNoNUxtUmxabUYxYkhRdWMzWmpNSUlCSWpBTkJna3Foa2lHCjl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUE0SmFoSXk2cUxFL00vVFdpTU5KR1lIMHIrcFd4YmI4OGpEVDMKd2RsRnU0Snc3WkQzZTNvNG9NWU9MS1kxK2tqZXFZS1FPSitSdG94eTFQMXVkRG0yL05mM1BFWWJsVU9uSGZqTQpkZWVlYTVVSzd3NmdKQXc4ZlBiK0hxZDBVTC9tSE1uVjhLUTZmd01FMWdyVDBnc1lRWXNsVW9aN010bk80TXZiCjFjVjVKS3poU0F6aTk3RzZuVkFVZHIvN05BOUcwdEZzVjFOQVFTckpwN2lkVkM4Ry8zOVZnYUU4SHFSTFpFamwKdGdINFg4blVXT3Q5c3FNaTJTTXF1bldyemh0MFhVWGdnNytqVm1XUjk1Tmk4d2Q3aldRQTNpSUg4eUdTSzdtRgpacXF5d0pXZG9yRm9MTzNIclVGblhtQkszN3dUMTdFazZTYXpxK1Bxc2VlQy9ZQm9zd0lEQVFBQk1BMEdDU3FHClNJYjNEUUVCQ3dVQUE0SUJBUUNpdWJESzczc2FOMWxZZVNyOG9ESEVyMVp0N3ZXTmdyYVZQeVJBWERhS3hveUsKc3diV0IwYU1QOTY3VVd4ZHF4bGp2eWtOMWJIOWJKb01iNUR0L1R2MDZiS3drbmFDS2pqbEJXVzlKK2JudUQ2TApVckhFb0pmK2lyaGJpRVk3cFh6UGVhMVF3RC9FY2FJRHdwV3AzVFcxeFdjQWllK1dGSWgzVFRyalJHNkR2ZEp2CjFKNFcyZE9uaGptY1ZVVkRlR3J6S2ZVdXV2YWtLWVpWa1RTRzloaTRFRVUwU0ZWaU9HTFhDVzBCd0RxTkpyYWMKUmRUV3VSUzNXeGUrWmNhSnQzVUtjSWpnbWlsL0FmNUlHUjN6V2xGUktjV2w3VFd6NHdrY1Y4ZW00TlRoSmFoWApzVzY3YjNvc3NmMHlTVFltL0xVN05DUDVBU2wvYjZDUm1zUldrcVUzCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+  tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRRGdscUVqTHFvc1Q4ejkKTmFJdzBrWmdmU3Y2bGJGdHZ6eU1OUGZCMlVXN2duRHRrUGQ3ZWppZ3hnNHNwalg2U042cGdwQTRuNUcyakhMVQovVzUwT2JiODEvYzhSaHVWUTZjZCtNeDE1NTVybFFydkRxQWtERHg4OXY0ZXAzUlF2K1ljeWRYd3BEcC9Bd1RXCkN0UFNDeGhCaXlWU2huc3kyYzdneTl2VnhYa2tyT0ZJRE9MM3NicWRVQlIydi9zMEQwYlMwV3hYVTBCQktzbW4KdUoxVUx3Yi9mMVdCb1R3ZXBFdGtTT1cyQWZoZnlkUlk2MzJ5b3lMWkl5cTZkYXZPRzNSZFJlQ0R2Nk5XWlpIMwprMkx6QjN1TlpBRGVJZ2Z6SVpJcnVZVm1xckxBbFoyaXNXZ3M3Y2V0UVdkZVlFcmZ2QlBYc1NUcEpyT3I0K3F4CjU0TDlnR2l6QWdNQkFBRUNnZ0VBTElCc2FZWkRuZ2dwL0RwMmF1b2ZtOXJ4cmZPZmRybWdDOEFySDdRbnh5SHYKc29NNUpyUnZLQnhXanE1WW44RjByVzM3bWR5MGlOR0hwNENZTkZ1RFVOS1NZTlViZmhZcnRScXBtT3RPVHM3MwpuYXJ1UEhaWVBnTExFOVBtam1HWC9UaFpOaGUwcDVvM2lSb1lJdFNqOThqVW1tZWZYZEllMWhoTzlTcnQrRUFTClJXUzhFdDU2VXlqQ1FINVRHdU0vbnlOVjczWUFMeHpJaE43MEtzYXE3REZxazZiVE8xUnpWWG51YjVVazgrclgKUDFCMzlRYnZodytmb1VZMGdDcFdSODdwS2lDOWh6Z05YU0NoKzQ1NndadEFIeEpUdW4xTW5DV2ZRUGtldjBVZgpGbkdtNTc1bUdRb2lnZnh5QmZoMS9xSUs5MWE0NWdTcVc1RjNzN3R4QVFLQmdRRDRsZEZVM0FhUGc2UUJXLytBCitSMVhoK3B4QW1pcjB2c1o2aE11ZHZUK252S1pHWTVQMnB4RGYrNktTdnpzWENZdjZTTnZXU1FsYmREaHdKanoKbklqN3BVUURDWE5jMnFvUDg3QjhORVNESUdvck9oanUzQkFNZnRLR1NjMWU5ZXdPd3A1QkphOHNLN1lhd3FOLwpyYmVOQjVLMjk0QjhkQTNKLzFoUmQwM0RRUUtCZ1FEblNaTEhQdWZTdGtGUlZjMWd4cURTdldFdlBkQTF5SkxRClBFdmZxNXhvd21hc2RQcDE4U2x6citQWFRyZ25VUFcwMytyc2gvYUZtYlJUbW9mZ2V4Wk9rWUREQUc1RXE2VUYKNENCRWRhZWFFek5JLzM5ZEM5blVWK1NhY1pZQ1hmYm9MNm5iQmxuNUU5cDZUVXhZOTRtc0t4T09OUjE2V1FycAp4VjZZSVJXUzh3S0JnR2FXUFd0TjJnOUQvbHpwUUlwVFJENnBRcUVjbzJHMWtoYmh1TVRHSnRrbGMyeW5WVW16CktDWGJGL0JPZmc1MUFQVm91MHpxZHJaVG1ZNXcweTVGL1dvTWpBTE0xYVVPUUh5UXp0YVRJMnNSNTM2clhUckYKNm9HZG5QZjZZUnk5Vkl2SzJWQjlZc3RSeHJkSWQvenJEZ0xQaTBhaTRZMTZ2MjRMU01GbUFOdUJBb0dBRjI0RgpsM2VRNW5DZUYwNDQydmZrTE5VUWRrZXR3dlVKb2x5cFZ3UThlUVJRZ0dIdFNXdGZ4cDluMWxUY0pPZDNySllPCloxMnlwSUFZbTJ1SkhqMTUyZ1cxWkl1em4vTS9hV1AyQU5sbVhCNWIwS1pKVWJTMG9XVXgvRTlMWWZ3QTJpNlIKNTJVeVVpQW52c0g3M1B0ZWovbGhKc1BNczZzM2hzeitzeXlPMGU4Q2dZRUF0K3NZRjNpaVVvVWszQ3Q3OFUzSwpmdm5hYlQwbUJ6Zmd5WStnbVVDYUNYdGZVNyt4S3BBN0g0bzJTWjVUTXhRRE9QY3kzY01PK2x0ZHMvOGprRlNjCjZNcGRFUzBpaHlKY0ZoaXBGTVlXMHNPVHRYZ3hkajVBVGFsTGNiNWJRczVNS0VPaDgzcDlWR2lxbkUwWHI0WlMKYVV6b1ZYeTlIMnd5a0E4SDlXLzBieGM9Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+---
+apiVersion: rbac.authorization.k8s.io/
+kind: RoleBinding
+metadata:
+  name: clusterapi
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: default
