@@ -1,0 +1,8 @@
+apiVersion: kubevirt.io/v1alpha1
+kind: VmProvider
+metadata:
+  name: example-vmprovider
+spec:
+  url: compute-vcsa.qa.lab.tlv.redhat.com
+  username: administrator@vsphere.local
+  password: SGVzbG8xMjMhCg==

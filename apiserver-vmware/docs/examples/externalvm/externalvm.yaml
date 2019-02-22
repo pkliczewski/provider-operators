@@ -1,0 +1,7 @@
+note: ExternalVm Example
+sample: |
+  apiVersion: vms.kubevirt.io/v1alpha1
+  kind: ExternalVm
+  metadata:
+    name: externalvm-example
+  spec:
